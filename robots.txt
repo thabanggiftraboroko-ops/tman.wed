@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://thabanggiftraboroko-ops.github.io/thabang-st10520837/Hope_Community_Foundation_Website/sitemap.xml
