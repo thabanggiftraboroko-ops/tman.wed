@@ -760,16 +760,15 @@ textarea:focus {
 }
 
 .gallery-item {
-  display: grid;
-  place-items: center;
-  min-height: 220px;
-  padding: 1.5rem;
-  border: 0;
+  display: block;
+  overflow: hidden;
+  padding: 0;
   border: 1px solid #b7cfa9;
   border-radius: 6px;
   color: var(--green-dark);
   background: #dcebd4;
   box-shadow: none;
+  text-align: left;
   cursor: pointer;
   transition: transform 160ms ease;
 }
@@ -779,8 +778,19 @@ textarea:focus {
   transform: translateY(-4px);
 }
 
-.gallery-item span { font-size: 3rem; }
-.gallery-item strong { font-size: 1.1rem; }
+.gallery-item img {
+  display: block;
+  width: 100%;
+  height: 220px;
+  object-fit: cover;
+}
+
+.gallery-item strong {
+  display: block;
+  padding: 0.9rem 1rem;
+  font-size: 1.1rem;
+}
+
 .g2 { background: #d8e9ed; }
 .g3 { background: #f3e1d5; }
 .g4 { background: #e2e0ee; }
@@ -807,14 +817,23 @@ textarea:focus {
 .modal-box {
   position: relative;
   z-index: 1;
-  width: min(420px, 100%);
+  width: min(760px, 100%);
   padding: 2rem;
   border-radius: var(--radius);
   background: var(--white);
   text-align: center;
 }
 
-.modal-icon { font-size: 4rem; }
+.modal-image {
+  display: block;
+  width: 100%;
+  max-height: 65vh;
+  margin: 0 auto 1.25rem;
+  border-radius: var(--radius);
+  object-fit: contain;
+}
+
+.modal-box h2 { font-size: 1.8rem; }
 
 .modal-close {
   position: absolute;
@@ -825,6 +844,23 @@ textarea:focus {
   background: transparent;
   font-size: 1.8rem;
   cursor: pointer;
+}
+
+.share-links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.75rem;
+}
+
+.share-links .btn[aria-disabled="true"] {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.form-card button:disabled {
+  opacity: 0.7;
+  cursor: wait;
 }
 
 .site-footer {
