@@ -18,8 +18,8 @@ document.addEventListener('DOMContentLoaded', () => {
     form.addEventListener('submit', (event) => {
       event.preventDefault();
       const currentForm = event.currentTarget;
-      const formData = new FormData(currentForm);
       const status = form.querySelector('.form-status');
+      const submitButton = form.querySelector('button[type="submit"]');
 
       if (!form.checkValidity()) {
         form.reportValidity();
@@ -27,28 +27,34 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
 
-      const formType = currentForm.dataset.formType;
-      let subject = 'Website enquiry';
-      if (formType === 'contact') subject = `Contact: ${formData.get('subject')}`;
-      if (formType === 'volunteer') subject = `Volunteer interest: ${formData.get('interest')}`;
-      if (formType === 'enquiry') subject = `Programme enquiry: ${formData.get('programme')}`;
+      const formData = new FormData(currentForm);
+      const encodedData = new URLSearchParams();
+      formData.forEach((value, key) => encodedData.append(key, String(value)));
+      if (submitButton) submitButton.disabled = true;
+      if (status) status.textContent = 'Sending your form...';
 
-      const body = [
-        `Name: ${formData.get('name')}`,
-        `Email: ${formData.get('email')}`,
-        formData.get('phone') ? `Phone: ${formData.get('phone')}` : '',
-        formData.get('interest') ? `Area of interest: ${formData.get('interest')}` : '',
-        formData.get('programme') ? `Programme: ${formData.get('programme')}` : '',
-        formData.get('message') ? `Message: ${formData.get('message')}` : ''
-      ].filter(Boolean).join('\n');
+      fetch(currentForm.action, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: encodedData.toString()
+      })
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error(`Form submission failed with status ${response.status}.`);
+          }
 
-      if (status) {
-        const programmeMessage = formType === 'enquiry'
-          ? 'Availability depends on the selected programme and current resources.'
-          : 'Review the message in your email app and press Send there.';
-        status.textContent = `Your email app should open. ${programmeMessage}`;
-      }
-      window.location.href = `mailto:hello@hopecommunity.org.za?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+          if (status) status.textContent = 'Thank you. Your form has been received.';
+          currentForm.reset();
+        })
+        .catch((error) => {
+          console.error('Unable to submit the form:', error);
+          if (status) {
+            status.textContent = 'We could not send your form. Please try again or email us directly.';
+          }
+        })
+        .finally(() => {
+          if (submitButton) submitButton.disabled = false;
+        });
     });
   });
 
@@ -75,9 +81,31 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  const shareCard = document.querySelector('.share-card');
+  if (shareCard) {
+    const shareUrl = window.location.protocol === 'http:' || window.location.protocol === 'https:'
+      ? window.location.href
+      : shareCard.dataset.siteUrl;
+    const shareText = 'Learn about Hope Community Foundation and its community programmes.';
+    const shareTargets = {
+      facebook: `https://www.facebook.com/sharer/sharer.php?${new URLSearchParams({ u: shareUrl })}`,
+      whatsapp: `https://wa.me/?text=${encodeURIComponent(`${shareText} ${shareUrl}`)}`,
+      linkedin: `https://www.linkedin.com/sharing/share-offsite/?${new URLSearchParams({ url: shareUrl })}`
+    };
+
+    shareCard.querySelectorAll('[data-share]').forEach((link) => {
+      const target = shareTargets[link.dataset.share];
+      if (target) {
+        link.href = target;
+        link.target = '_blank';
+        link.rel = 'noopener noreferrer';
+      }
+    });
+  }
+
   const modal = document.querySelector('#gallery-modal');
   const modalTitle = document.querySelector('#modal-title');
-  const modalIcon = document.querySelector('#modal-icon');
+  const modalImage = document.querySelector('#modal-image');
   let lastGalleryItem;
   const closeModal = () => {
     if (modal && !modal.hidden) {
@@ -91,8 +119,8 @@ document.addEventListener('DOMContentLoaded', () => {
       item.addEventListener('click', () => {
         lastGalleryItem = item;
         modalTitle.textContent = item.dataset.title || 'Gallery image';
-        modalIcon.textContent = item.querySelector('span').textContent;
-        modalIcon.setAttribute('aria-label', `${modalTitle.textContent} illustration`);
+        modalImage.src = item.dataset.image;
+        modalImage.alt = item.dataset.alt;
         modal.hidden = false;
         modal.querySelector('.modal-close').focus();
       });
